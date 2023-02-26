@@ -232,7 +232,7 @@ local function worker(user_args)
 		volume.widget = widget_types[widget_type].get_widget(args)
 	end
 
-	local function update_graphic(widget, stdout)
+	local function update_graphic(widget, stdout, do_notify)
 		local mute = string.match(stdout, "%[(o%D%D?)%]") -- \[(o\D\D?)\] - [on] or [off]
 		if mute == "off" then
 			widget:mute()
@@ -240,19 +240,22 @@ local function worker(user_args)
 			widget:unmute()
 		end
 		local volume_level = string.match(stdout, "(%d?%d?%d)%%") -- (\d?\d?\d)\%)
+        if do_notify == true then
+            spawn.easy_async("dunstify -a volume \" \" -i audio-volume-low -u low -h int:value:".. volume_level.." -h string:synchronous:volume -h string:x-dunst-stack-tag:vol -t 700", function () end)
+        end
 		volume_level = string.format("% 3d", volume_level)
 		widget:set_volume_level(volume_level)
 	end
 
-	function volume:inc(s)
+	function volume:inc(s, notify)
 		spawn.easy_async(INC_VOLUME_CMD(card, device, mixctrl, value_type, s or step), function(stdout)
-			update_graphic(volume.widget, stdout)
+			update_graphic(volume.widget, stdout, notify)
 		end)
 	end
 
-	function volume:dec(s)
+	function volume:dec(s, notify)
 		spawn.easy_async(DEC_VOLUME_CMD(card, device, mixctrl, value_type, s or step), function(stdout)
-			update_graphic(volume.widget, stdout)
+			update_graphic(volume.widget, stdout, notify)
 		end)
 	end
 
@@ -304,8 +307,6 @@ local function worker(user_args)
 	return volume.widget
 end
 
-return setmetatable(volume, {
-	__call = function(_, ...)
-		return worker(...)
-	end,
-})
+volume.create = worker
+
+return volume
