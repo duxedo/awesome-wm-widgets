@@ -61,26 +61,34 @@ local function worker(user_args)
 
     net_speed_widget = wibox.widget {
         {
-            id = 'rx_speed',
-            forced_width = width,
-            align = 'right',
-            widget = wibox.widget.textbox
+            layout = wibox.layout.align.horizontal,
+            {
+                id = 'tx_speed',
+                forced_width = width,
+                align = 'left',
+                widget = wibox.widget.textbox
+            },
+            {
+                image =  ICONS_DIR .. 'up.svg',
+                widget = wibox.widget.imagebox
+            },
+            forced_height = 22
         },
         {
-            image = ICONS_DIR .. 'down.svg',
-            widget = wibox.widget.imagebox
+            layout = wibox.layout.align.horizontal,
+            {
+                id = 'rx_speed',
+                forced_width = width,
+                align = 'left',
+                widget = wibox.widget.textbox
+            },
+            {
+                image = ICONS_DIR .. 'down.svg',
+                widget = wibox.widget.imagebox
+            },
+            forced_height = 22
         },
-        {
-            image =  ICONS_DIR .. 'up.svg',
-            widget = wibox.widget.imagebox
-        },
-        {
-            id = 'tx_speed',
-            forced_width = width,
-            align = 'left',
-            widget = wibox.widget.textbox
-        },
-        layout = wibox.layout.fixed.horizontal,
+        layout = wibox.layout.fixed.vertical,
         set_rx_text = function(self, new_rx_speed)
             self:get_children_by_id('rx_speed')[1]:set_text(tostring(new_rx_speed))
         end,
@@ -95,7 +103,6 @@ local function worker(user_args)
     local prev_tx = 0
 
     local update_widget = function(widget, stdout)
-
         local cur_vals = split(stdout, '\r\n')
 
         local cur_rx = 0
@@ -108,6 +115,7 @@ local function worker(user_args)
 
         local speed_rx = (cur_rx - prev_rx) / timeout
         local speed_tx = (cur_tx - prev_tx) / timeout
+
 
         widget:set_rx_text(convert_to_h(speed_rx))
         widget:set_tx_text(convert_to_h(speed_tx))
