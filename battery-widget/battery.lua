@@ -58,7 +58,7 @@ local function worker(user_args)
         {
             id = "icon",
             widget = wibox.widget.imagebox,
-            resize = false
+            resize = true
         },
         valign = 'center',
         layout = wibox.container.place,
@@ -87,7 +87,7 @@ local function worker(user_args)
                 icon_size = dpi(16),
                 position = position,
                 timeout = 5, hover_timeout = 0.5,
-                width = 200,
+                width = dpi(200),
                 screen = mouse.screen
             }
         end
